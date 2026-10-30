@@ -1,19 +1,54 @@
-// One photographic doorway, with both moving leaves sampled from the same image.
+import * as THREE from './assets/three.module.js';
+// The photographic carving is the front texture of a solid hinged timber slab.
 export function createEntrance(container) {
- const art='assets/carved-door.png';
+ const scene=new THREE.Scene();
+ const renderer=new THREE.WebGLRenderer({alpha:true,antialias:true,powerPreference:'high-performance'});renderer.setPixelRatio(Math.min(devicePixelRatio,1.7));renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.setClearColor(0,0);
+ const canvas=renderer.domElement;canvas.className='solid-door-canvas';container.prepend(canvas);
  const backdrop=document.createElement('div');backdrop.className='door-backdrop';container.prepend(backdrop);
- const world=document.createElement('div');world.className='photo-door-world';
- const interior=document.createElement('div');interior.className='door-interior';world.appendChild(interior);
- const frame=document.createElement('img');frame.className='photo-door-frame';frame.src=art;frame.alt='';frame.decoding='async';frame.fetchPriority='high';world.appendChild(frame);
- const leaves=[];
- for(const side of ['left','right']){const leaf=document.createElement('div');leaf.className='photo-door-leaf photo-door-'+side;world.appendChild(leaf);leaves.push(leaf);}
- container.prepend(world);
- let progress=0,width=0,height=0;const clamp=t=>Math.max(0,Math.min(1,t)),ease=t=>t*t*(3-2*t);
- function render(p=progress){progress=p;const zoom=ease(clamp(p/.34)),open=ease(clamp((p-.30)/.52)),exit=ease(clamp((p-.83)/.17));
-  world.style.transform=`translate(-50%,-50%) scale(${1+zoom*.19+exit*.06})`;
-  leaves[0].style.transform=`rotateY(${-open*103}deg)`;leaves[1].style.transform=`rotateY(${open*103}deg)`;
-  world.style.opacity=String(1-exit);backdrop.style.opacity=String(.8-exit*.35);
+ const camera=new THREE.PerspectiveCamera(40,1,.025,30),resources=[];
+ scene.add(new THREE.HemisphereLight('#fff0d5','#795336',2.0));
+ const key=new THREE.DirectionalLight('#ffe1ab',2.5);key.position.set(-2,3,5);scene.add(key);
+ const light=new THREE.SpotLight('#ffd69b',38,15,.7,.7,1.7);light.position.set(.8,2.7,2.8);light.target.position.set(0,-1.5,-2);light.castShadow=true;light.shadow.mapSize.set(1024,1024);light.shadow.bias=-.00015;light.shadow.normalBias=.015;scene.add(light,light.target);
+ const fill=new THREE.PointLight('#ffc57f',3.5,10,2);fill.position.set(0,1.1,-2.5);scene.add(fill);
+ let textureReady=false;
+ const base=new THREE.TextureLoader().load('assets/carved-door.png',()=>{textureReady=true;resources.filter(r=>r.isTexture).forEach(t=>t.needsUpdate=true);render();});base.colorSpace=THREE.SRGBColorSpace;base.anisotropy=Math.min(8,renderer.capabilities.getMaxAnisotropy());resources.push(base);
+ function crop(x,y,w,h){const t=base.clone();t.repeat.set(w,h);t.offset.set(x,1-y-h);t.needsUpdate=true;resources.push(t);return t;}
+ function basic(map){const m=new THREE.MeshBasicMaterial({map});resources.push(m);return m;}
+ const grain=crop(.490,.18,.008,.65),edge=new THREE.MeshStandardMaterial({map:grain,color:'#a7794d',roughness:.64}),back=new THREE.MeshStandardMaterial({map:grain,color:'#85572e',roughness:.7}),brass=new THREE.MeshStandardMaterial({color:'#bb9347',metalness:.75,roughness:.36});resources.push(edge,back,brass);
+ function box(w,h,d,x,y,z,m,parent=scene){const geo=new THREE.BoxGeometry(w,h,d);resources.push(geo);const mesh=new THREE.Mesh(geo,m);mesh.position.set(x,y,z);mesh.castShadow=true;mesh.receiveShadow=true;parent.add(mesh);return mesh;}
+ const W=2.8,H=4.2,x0=.125,y0=.1172,x1=.875,y1=.8841;
+ const leafW=W*.375,leafH=H*(y1-y0),doorY=H*(.5-(y0+y1)/2),thickness=.16;
+ // Four fixed strips preserve the original frame and floral decorations around a real opening.
+ function strip(x,y,w,h){const geo=new THREE.PlaneGeometry(w*W,h*H);resources.push(geo);const plane=new THREE.Mesh(geo,basic(crop(x,y,w,h)));plane.position.set((x+w/2-.5)*W,(.5-y-h/2)*H,.005);scene.add(plane);}
+ strip(0,0,x0,1);strip(x1,0,1-x1,1);strip(x0,0,x1-x0,y0);strip(x0,y1,x1-x0,1-y1);
+ // The frame has depth behind its photographic face, including a recessed threshold.
+ for(const s of [-1,1])box(.065,leafH+.04,.27,s*(leafW+.033),doorY,-.15,edge);
+ box(leafW*2+.13,.065,.27,0,doorY+leafH/2+.033,-.15,edge);
+ const hinges=[];
+ for(const s of [-1,1]){
+  const pivot=new THREE.Group();pivot.position.set(s*leafW,doorY,-thickness/2);scene.add(pivot);hinges.push(pivot);
+  const front=basic(crop(s===-1?x0:.5,y0,.375,y1-y0));
+  // BoxGeometry: right, left, top, bottom, front, back. Every face is present.
+  const slab=box(leafW,leafH,thickness,-s*leafW/2,0,0,[edge,edge,edge,edge,front,back],pivot);
+  // A brass latch on the free edge and hinge barrels make the edge legible in motion.
+  box(.009,.22,.070,-s*leafW,0,0,brass,pivot);
+  for(const y of [-leafH*.35,0,leafH*.35]){const geo=new THREE.CylinderGeometry(.016,.016,.16,12);resources.push(geo);const pin=new THREE.Mesh(geo,brass);pin.position.set(0,y,0);pivot.add(pin);}
+  // Recessed rear panels remain visible when a leaf rotates past ninety degrees.
+  for(const y of [-leafH*.27,leafH*.23]){box(leafW*.78,leafH*.36,.012,-s*leafW/2,y,-thickness/2-.007,back,pivot);}
  }
- function resize(){width=Math.min(innerHeight*2/3,innerWidth/.78);height=width*1.5;world.style.width=width+'px';world.style.height=height+'px';world.style.setProperty('--art-width',width+'px');world.style.setProperty('--art-height',height+'px');leaves[0].style.backgroundPosition=(-width*.125)+'px '+(-height*.1172)+'px';leaves[1].style.backgroundPosition=(-width*.5)+'px '+(-height*.1172)+'px';render();}
- window.addEventListener('resize',resize);resize();return{render,dispose(){world.remove();backdrop.remove();window.removeEventListener('resize',resize);}};
+ const wall=new THREE.MeshStandardMaterial({color:'#ecd7b3',roughness:.95}),floor=new THREE.MeshStandardMaterial({color:'#c5a171',roughness:.75});resources.push(wall,floor);
+ box(2.6,.08,7,0,doorY-leafH/2-.045,-3.5,floor);box(2.6,4,.1,0,0,-6,wall);
+ for(const s of [-1,1])box(.12,4,6,s*1.25,0,-3.1,wall);
+ box(2.6,.1,6,0,doorY+leafH/2+.15,-3.1,wall);
+ let progress=0,initialZ=6,focusY=0;
+ const clamp=t=>Math.max(0,Math.min(1,t)),ease=t=>t*t*(3-2*t);
+ function render(p=progress){progress=p;const zoom=ease(clamp(p/.25)),swing=ease(clamp((p-.16)/.58)),enter=ease(clamp((p-.75)/.25));
+  const nearZ=initialZ*.84;camera.position.set(0,THREE.MathUtils.lerp(0,doorY,enter),THREE.MathUtils.lerp(initialZ,nearZ,zoom)*(1-enter)-.38*enter);camera.lookAt(0,THREE.MathUtils.lerp(focusY,doorY,enter),-3);
+  hinges[0].rotation.y=swing*Math.PI*.60;hinges[1].rotation.y=-swing*Math.PI*.60;
+  canvas.style.opacity=String(1-ease(clamp((p-.94)/.06)));backdrop.style.opacity=String(.8-enter*.35);if(textureReady)renderer.render(scene,camera);
+ }
+ function resize(){const artWidth=Math.min(innerHeight*2/3,innerWidth/.78),artHeight=artWidth*1.5,visibleHeight=H*innerHeight/artHeight;initialZ=visibleHeight/(2*Math.tan(THREE.MathUtils.degToRad(20)));focusY=-(innerWidth<600?.05:.03)*visibleHeight;camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);render();}
+ window.addEventListener('resize',resize);resize();return{render,dispose(){window.removeEventListener('resize',resize);resources.forEach(r=>r.dispose());renderer.dispose();canvas.remove();backdrop.remove();}};
 }
+
+

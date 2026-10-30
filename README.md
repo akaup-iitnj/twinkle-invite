@@ -6,4 +6,5 @@ A photographic carved-wood doorway opens with one click: a short zoom, opening d
 
 Static website, no build step. GitHub Pages serves the root of main. Edit config.js for event details and the published Google Forms responder link. RSVP responses remain in Google Forms and its connected spreadsheet, outside this repository.
 
-The generated doorway asset is assets/carved-door.png. Both animated panels sample the same image to keep the carvings aligned. Local asset paths are relative for project URL hosting. Serve this directory over HTTP to preview.
+The generated doorway asset is assets/carved-door.png. The original artwork textures the fronts of solid Three.js door slabs with timber edges, rear faces, hinges and perspective camera motion. Local asset paths are relative for project URL hosting. Serve this directory over HTTP to preview.
+
