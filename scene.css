@@ -60,7 +60,7 @@ body[data-scene="welcome"] #welcome{cursor:pointer}
 .welcome-eyebrow{font-size:10px;margin-bottom:12px}
 .welcome-actions{margin-top:20px}
 .flower-canopy{display:none}
-#festive-room::before{content:'';position:absolute;inset:0 0 auto;height:clamp(82px,10vw,135px);background:url('assets/carved-door.png') center top/100% auto no-repeat;mask-image:linear-gradient(#000 50%,transparent)}
+#festive-room::before{content:'';position:absolute;inset:0 0 auto;height:clamp(140px,17vw,220px);background:url('assets/carved-door.png') center top/100% auto no-repeat;-webkit-mask-image:linear-gradient(to bottom,#000 0%,#000 12%,rgba(0,0,0,.95) 24%,rgba(0,0,0,.72) 43%,rgba(0,0,0,.4) 62%,rgba(0,0,0,.13) 81%,transparent 100%);mask-image:linear-gradient(to bottom,#000 0%,#000 12%,rgba(0,0,0,.95) 24%,rgba(0,0,0,.72) 43%,rgba(0,0,0,.4) 62%,rgba(0,0,0,.13) 81%,transparent 100%)}
 @media(max-width:600px){.welcome{padding-bottom:28px}.welcome h1{font-size:1.9rem}.photo-door-world{top:45%}#festive-room::before{background-size:125% auto}.welcome-actions{margin-top:17px}}
 .door-backdrop{z-index:0}.photo-door-world{z-index:1}#scene-shade{z-index:2}
 /* Perspective-rendered timber volumes; the image only supplies their front material. */
