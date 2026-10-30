@@ -1,0 +1,44 @@
+#scene-stage{position:fixed;inset:0;overflow:hidden;z-index:0;pointer-events:none;background:radial-gradient(ellipse at 50% 40%,#6c6553,#102137 80%)}
+#scene-stage canvas{display:block;width:100%;height:100%}
+#scene-shade{position:absolute;inset:0;background:linear-gradient(transparent 32%,rgba(7,18,29,.22) 50%,rgba(7,18,29,.94));transition:opacity .25s}
+body[data-scene="approaching"] #scene-shade{opacity:0}
+#welcome{transition:opacity .18s,transform .18s}
+body[data-scene="approaching"] #welcome{opacity:0;pointer-events:none;transform:translateY(8px)}
+body[data-scene="revealed"] #scene-stage{filter:blur(5px)}
+body[data-scene="revealed"] #scene-shade{background:rgba(23,22,19,.32)}
+#invitation{padding:70px 16px 28px;animation:invitation-appear .35s ease both}
+#invitation .invitation-letter{width:min(100%,570px);padding:29px 38px 22px;background:linear-gradient(135deg,#fffaf0,#f6ecd9);box-shadow:0 22px 80px #0005}
+#invitation h1{font-size:clamp(33px,5.5vh,48px)}
+#invitation .letter-kicker{font-size:10px;margin-bottom:17px}
+#invitation .invitation-message{font-size:13px;margin-top:16px}
+#invitation .event-details{margin:19px auto;padding-top:16px;gap:12px}
+@media(max-width:600px){#invitation .invitation-letter{padding:27px 24px 18px}.welcome h1{font-size:clamp(2.55rem,9vw,3.3rem)}}
+@media(max-height:700px){#invitation .invitation-letter{padding:23px 24px 16px}#invitation .letter-ornament{margin-bottom:9px}#invitation h1{font-size:33px}#invitation .invitation-message{margin-top:12px;line-height:1.5}#invitation .event-details{margin:14px auto;gap:9px}#invitation .host-names{font-size:23px}}
+@keyframes invitation-appear{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:translateY(0)}}
+@media(prefers-reduced-motion:reduce){#invitation{animation:none}#welcome,#scene-shade{transition:none}}
+/* A softly lit festive room surrounds the letter after entry. */
+#festive-room{display:none;position:fixed;inset:0;z-index:2;pointer-events:none;overflow:hidden;background:radial-gradient(ellipse at 50% 5%,#efbd5c35,transparent 65%),linear-gradient(90deg,#70300f55,transparent 30%,transparent 70%,#70300f55)}
+body[data-scene="revealed"] #festive-room{display:block;animation:room-arrive .6s ease both}
+body[data-scene="revealed"] #scene-stage{filter:blur(1.5px)}
+body[data-scene="revealed"] #scene-shade{background:rgba(60,30,9,.19)}
+.flower-canopy{position:absolute;top:-4px;left:50%;translate:-50% 0;width:max(100%,1000px);height:auto;filter:drop-shadow(0 5px 6px #54220455)}
+.ceiling-glow{position:absolute;inset:0;background:radial-gradient(ellipse at 50% -10%,#ffe4a985,transparent 70%)}
+.room-light{position:absolute;width:130px;height:230px;bottom:7%;border-radius:50%;background:radial-gradient(ellipse,#ffcd6d75,transparent 68%);filter:blur(12px)}
+.room-light-left{left:2%}.room-light-right{right:2%}
+#marigold-shower{display:none;position:fixed;inset:0;z-index:5;overflow:hidden;pointer-events:none;perspective:700px;contain:strict}
+body[data-scene="revealed"] #marigold-shower{display:block}
+.petal-fall{position:absolute;left:var(--x);top:-30px;width:var(--size);height:calc(var(--size)*1.5);animation:petal-descend var(--duration) var(--delay) linear infinite;will-change:transform}
+.marigold-petal{display:block;width:100%;height:100%;border-radius:65% 38% 60% 24%;background:radial-gradient(ellipse at 30% 25%,#ffdb64 0%,#f8aa29 45%,#d46a0c 100%);box-shadow:inset 1px 0 1px #fff1a580;opacity:.72;animation:petal-flutter var(--sway) var(--delay) ease-in-out infinite alternate;transform-origin:50% 35%}
+.petal-fall:nth-child(3n) .marigold-petal{background:radial-gradient(ellipse at 35% 25%,#ffc348,#ed861b 60%,#bf4f0b);opacity:.60}
+.petal-fall:nth-child(4n){filter:blur(.65px)}
+@keyframes petal-descend{0%{transform:translate3d(0,-35px,0);opacity:0}6%{opacity:1}92%{opacity:1}100%{transform:translate3d(var(--drift),calc(100dvh + 65px),0);opacity:0}}
+@keyframes petal-flutter{0%{transform:translateX(-12px) rotateZ(-32deg) rotateY(15deg) rotateX(15deg)}50%{transform:translateX(8px) rotateZ(20deg) rotateY(100deg) rotateX(45deg)}100%{transform:translateX(-5px) rotateZ(65deg) rotateY(185deg) rotateX(-20deg)}}
+@keyframes room-arrive{from{opacity:0}to{opacity:1}}
+.petals-paused .petal-fall,.petals-paused .marigold-petal{animation-play-state:paused}
+@media(max-width:600px){.petal-fall:nth-child(n+19){display:none}.flower-canopy{width:1000px}.room-light{width:85px}#invitation{padding-top:87px}}
+@media(prefers-reduced-motion:reduce){#marigold-shower{display:none!important}body[data-scene="revealed"] #festive-room{animation:none}}
+.petal-toggle{display:none;right:auto;left:max(20px,env(safe-area-inset-left));top:max(16px,env(safe-area-inset-top));z-index:8}
+body[data-scene="revealed"] .petal-toggle{display:inline-flex}
+.petals-user-paused .petal-fall,.petals-user-paused .marigold-petal{animation-play-state:paused}
+@media(max-width:600px){.petal-toggle{left:14px;top:max(12px,env(safe-area-inset-top))}}
+@media(prefers-reduced-motion:reduce){body[data-scene="revealed"] .petal-toggle{display:none}}

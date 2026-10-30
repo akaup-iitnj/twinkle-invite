@@ -1,30 +1,11 @@
-# Mukaria Housewarming Invitation
+# Rahul & Twinkle Mokaria — A Blessed Beginning
 
-A mobile-friendly invitation for Rahul and Twinkle Mukaria’s Satyanarayan Katha and housewarming, with a slow approach to the house and opening doors. Guests can skip the animation or replay it. The RSVP button opens the connected Google Form in the same tab.
+Interactive Satyanarayan Katha and housewarming invitation for November 14, 2026 at 3:00 PM.
 
-## Publish with GitHub Pages
+Live invitation: https://akaup-iitnj.github.io/twinkle-invite/
 
-This is a static website. No build command, package installation, or server is required.
+The site uses a local Three.js 3D entrance, festive interior, and gentle falling marigold petals. It is a static site with relative asset paths and no build step. GitHub Pages publishes the root of the main branch.
 
-1. Put these files at the root of the repository on the `main` branch.
-2. Open the repository’s **Settings → Pages**.
-3. Under **Build and deployment**, select **Deploy from a branch**.
-4. Select `main` and `/(root)`, then save.
+Edit `config.js` for event details and the Google Forms responder URL. The RSVP button opens that form; guest responses are stored by Google Forms, outside this repository. View the form's Responses tab after a test guest submits their name, attendance, and guest count. No response data or account credentials belong in this repository.
 
-Keep `.nojekyll` in the repository root. All local asset paths are relative, so the invitation works at a GitHub Pages project URL as well as at a domain root. See [GitHub’s publishing-source instructions](https://docs.github.com/en/pages/getting-started-with-github-pages/configuring-a-publishing-source-for-your-github-pages-site).
-
-## Update the invitation
-
-Edit `config.js`:
-
-- Set `date` to the confirmed event date. It currently reads `Date to be confirmed`.
-- Adjust `time` and `dinner` if the schedule changes.
-- Set `googleFormUrl` to a published Google Form’s responder URL, not its editing URL. The existing working URL is already configured.
-
-Google Forms collects the RSVPs and sends them to its linked Google Sheet. Configure that destination in Google Forms; no response records or Google account credentials belong in this repository.
-
-The existing `assets/house.png` and `door` coordinates in `config.js` work together. Preserve both to retain the current artwork and door animation.
-
-## Files
-
-`index.html`, `app.js`, `config.js`, `site.css`, `scene.css`, `assets/house.png`, `.nojekyll`, and this README.
+To preview locally, serve this directory with a local HTTP server. Keep `assets/three.module.js` and `assets/three.core.js` together; their upstream MIT license notices are included in the files.
