@@ -65,3 +65,15 @@ body[data-scene="welcome"] #welcome{cursor:pointer}
 .door-backdrop{z-index:0}.photo-door-world{z-index:1}#scene-shade{z-index:2}
 /* Perspective-rendered timber volumes; the image only supplies their front material. */
 #scene-stage .solid-door-canvas{position:absolute;inset:0;z-index:1;display:block;width:100%;height:100%}
+
+/* Solid doors reveal the floating letter directly; there is no room geometry. */
+body[data-scene="approaching"] #scene-stage{z-index:4;background:transparent}
+body[data-scene="approaching"] #scene-shade{display:none}
+body[data-scene="approaching"] #scene-stage .door-backdrop{display:none}
+body[data-scene="approaching"] #invitation{animation:none}
+body[data-scene="approaching"] #festive-room{display:block}
+body[data-scene="approaching"] #marigold-shower{display:block;z-index:3}
+body[data-scene="revealed"] #scene-stage{display:none}
+body[data-scene="approaching"],body[data-scene="revealed"]{background:radial-gradient(ellipse at 50% 20%,#f2cf91,#9b5a22 70%,#573216)}
+body[data-scene="approaching"] #experience{clip-path:var(--opening-clip,inset(0));height:100svh;overflow:hidden}
+body[data-scene="revealed"] #invitation,body[data-scene="revealed"] #festive-room{animation:none}

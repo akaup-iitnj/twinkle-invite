@@ -51,16 +51,18 @@ export function createEntrance(container) {
   function panelMask(x,y){let mask=0;for(const [l,r,t,b] of [[.16,.436,.128,.506],[.563,.84,.128,.506],[.16,.436,.55,.803],[.563,.84,.55,.803]])mask=Math.max(mask,smooth(l,l+.008,x)*(1-smooth(r-.008,r,x))*smooth(t,t+.008,y)*(1-smooth(b-.008,b,y)));return mask;}
   for(const {geo,start} of reliefSurfaces){const pos=geo.attributes.position,uv=geo.attributes.uv;for(let i=0;i<pos.count;i++){const x=start+uv.getX(i)*.375,y=y0+(1-uv.getY(i))*(y1-y0),px=Math.min(511,Math.max(0,Math.round(x*511))),py=Math.min(767,Math.max(0,Math.round(y*767))),idx=(py*512+px)*4,luma=(pixels[idx]*.2126+pixels[idx+1]*.7152+pixels[idx+2]*.0722)/255;const raised=panelMask(x,y)*smooth(.10,.60,luma)*.042;pos.setZ(i,raised);}pos.needsUpdate=true;geo.computeVertexNormals();geo.computeBoundingSphere();}
  }
- const wall=new THREE.MeshStandardMaterial({color:'#ecd7b3',roughness:.95}),floor=new THREE.MeshStandardMaterial({color:'#c5a171',roughness:.75});resources.push(wall,floor);
- box(2.6,.08,7,0,doorY-leafH/2-.045,-3.5,floor);box(2.6,4,.1,0,0,-6,wall);
- for(const s of [-1,1])box(.12,4,6,s*1.25,0,-3.1,wall);
- box(2.6,.1,6,0,doorY+leafH/2+.15,-3.1,wall);
+ // The opening is transparent: the invitation sits immediately behind the doors.
  let progress=0,initialZ=6,focusY=0;
  const clamp=t=>Math.max(0,Math.min(1,t)),ease=t=>t*t*(3-2*t);
  function render(p=progress){progress=p;const zoom=ease(clamp(p/.22)),swing=ease(clamp((p-.12)/.88)),enter=0;
   const nearZ=initialZ*.84;camera.position.set(.11*Math.sin(swing*Math.PI)*(1-enter),THREE.MathUtils.lerp(0,doorY,enter),THREE.MathUtils.lerp(initialZ,nearZ,zoom)*(1-enter)-.38*enter);camera.lookAt(0,THREE.MathUtils.lerp(focusY,doorY,enter),-3);
   hinges[0].rotation.y=swing*Math.PI*.60;hinges[1].rotation.y=-swing*Math.PI*.60;
-  canvas.style.opacity=String(1-ease(clamp((p-.78)/.22)));backdrop.style.opacity=String(.8-ease(clamp((p-.78)/.22))*.35);if(textureReady)renderer.render(scene,camera);
+  // Keep the letter behind the frame until the doorway dissolves away.
+  camera.updateMatrixWorld();
+  const topLeft=new THREE.Vector3(-leafW,doorY+leafH/2,-.18).project(camera),bottomRight=new THREE.Vector3(leafW,doorY-leafH/2,-.18).project(camera),unmask=ease(clamp((p-.85)/.15));
+  container.style.setProperty('--opening-clip',`inset(${Math.max(0,(1-topLeft.y)*50)*(1-unmask)}% ${Math.max(0,(1-bottomRight.x)*50)*(1-unmask)}% ${Math.max(0,(1+bottomRight.y)*50)*(1-unmask)}% ${Math.max(0,(1+topLeft.x)*50)*(1-unmask)}%)`);
+  document.getElementById('experience').style.setProperty('--opening-clip',container.style.getPropertyValue('--opening-clip'));
+  canvas.style.opacity=String(1-ease(clamp((p-.85)/.15)));backdrop.style.opacity=p>0?'0':'.8';if(textureReady)renderer.render(scene,camera);
  }
  function resize(){const artWidth=Math.min(innerHeight*2/3,innerWidth/.78),artHeight=artWidth*1.5,visibleHeight=H*innerHeight/artHeight;initialZ=visibleHeight/(2*Math.tan(THREE.MathUtils.degToRad(34)));focusY=-(innerWidth<600?.05:.03)*visibleHeight;camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);render();}
  window.addEventListener('resize',resize);resize();return{render,dispose(){window.removeEventListener('resize',resize);resources.forEach(r=>r.dispose());renderer.dispose();canvas.remove();backdrop.remove();}};
