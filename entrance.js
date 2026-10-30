@@ -5,13 +5,14 @@ export function createEntrance(container) {
  const renderer=new THREE.WebGLRenderer({alpha:true,antialias:true,powerPreference:'high-performance'});renderer.setPixelRatio(Math.min(devicePixelRatio,1.7));renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.setClearColor(0,0);
  const canvas=renderer.domElement;canvas.className='solid-door-canvas';container.prepend(canvas);
  const backdrop=document.createElement('div');backdrop.className='door-backdrop';container.prepend(backdrop);
- const camera=new THREE.PerspectiveCamera(40,1,.025,30),resources=[];
+ const camera=new THREE.PerspectiveCamera(68,1,.025,30),resources=[];
  scene.add(new THREE.HemisphereLight('#fff0d5','#795336',2.0));
  const key=new THREE.DirectionalLight('#ffe1ab',2.5);key.position.set(-2,3,5);scene.add(key);
  const light=new THREE.SpotLight('#ffd69b',38,15,.7,.7,1.7);light.position.set(.8,2.7,2.8);light.target.position.set(0,-1.5,-2);light.castShadow=true;light.shadow.mapSize.set(1024,1024);light.shadow.bias=-.00015;light.shadow.normalBias=.015;scene.add(light,light.target);
  const fill=new THREE.PointLight('#ffc57f',3.5,10,2);fill.position.set(0,1.1,-2.5);scene.add(fill);
+ const reliefSurfaces=[];
  let textureReady=false;
- const base=new THREE.TextureLoader().load('assets/carved-door.png',()=>{textureReady=true;resources.filter(r=>r.isTexture).forEach(t=>t.needsUpdate=true);render();});base.colorSpace=THREE.SRGBColorSpace;base.anisotropy=Math.min(8,renderer.capabilities.getMaxAnisotropy());resources.push(base);
+ const base=new THREE.TextureLoader().load('assets/carved-door.png',()=>{buildRelief(base.image);textureReady=true;resources.filter(r=>r.isTexture).forEach(t=>t.needsUpdate=true);render();});base.colorSpace=THREE.SRGBColorSpace;base.anisotropy=Math.min(8,renderer.capabilities.getMaxAnisotropy());resources.push(base);
  function crop(x,y,w,h){const t=base.clone();t.repeat.set(w,h);t.offset.set(x,1-y-h);t.needsUpdate=true;resources.push(t);return t;}
  function basic(map){const m=new THREE.MeshBasicMaterial({map});resources.push(m);return m;}
  const grain=crop(.490,.18,.008,.65),edge=new THREE.MeshStandardMaterial({map:grain,color:'#a7794d',roughness:.64}),back=new THREE.MeshStandardMaterial({map:grain,color:'#85572e',roughness:.7}),brass=new THREE.MeshStandardMaterial({color:'#bb9347',metalness:.75,roughness:.36});resources.push(edge,back,brass);
@@ -30,11 +31,25 @@ export function createEntrance(container) {
   const front=basic(crop(s===-1?x0:.5,y0,.375,y1-y0));
   // BoxGeometry: right, left, top, bottom, front, back. Every face is present.
   const slab=box(leafW,leafH,thickness,-s*leafW/2,0,0,[edge,edge,edge,edge,front,back],pivot);
+  // Subdivided timber relief gives the floral face depth and changing surface normals.
+  const reliefMap=crop(s===-1?x0:.5,y0,.375,y1-y0);
+  const reliefMaterial=new THREE.MeshStandardMaterial({map:reliefMap,color:'#736254',emissiveMap:reliefMap,emissive:'#ffffff',emissiveIntensity:.66,roughness:.8,metalness:.025});
+  const reliefGeometry=new THREE.PlaneGeometry(leafW,leafH,112,320);resources.push(reliefGeometry,reliefMaterial);
+  const reliefMesh=new THREE.Mesh(reliefGeometry,reliefMaterial);reliefMesh.position.set(-s*leafW/2,0,thickness/2+.001);reliefMesh.castShadow=true;reliefMesh.receiveShadow=true;pivot.add(reliefMesh);reliefSurfaces.push({geo:reliefGeometry,start:s===-1?x0:.5});
+  // The ring knocker projects beyond the carving and changes silhouette as the leaf turns.
+  const ringGeo=new THREE.TorusGeometry(.126,.017,12,48);resources.push(ringGeo);const ring=new THREE.Mesh(ringGeo,brass);ring.position.set(-s*.4872,.0294-doorY,thickness/2+.055);ring.castShadow=true;ring.receiveShadow=true;pivot.add(ring);
+  const bossGeo=new THREE.SphereGeometry(.038,16,12);resources.push(bossGeo);const boss=new THREE.Mesh(bossGeo,brass);boss.position.set(-s*.4872,.17-doorY,thickness/2+.04);boss.castShadow=true;pivot.add(boss);
   // A brass latch on the free edge and hinge barrels make the edge legible in motion.
   box(.009,.22,.070,-s*leafW,0,0,brass,pivot);
   for(const y of [-leafH*.35,0,leafH*.35]){const geo=new THREE.CylinderGeometry(.016,.016,.16,12);resources.push(geo);const pin=new THREE.Mesh(geo,brass);pin.position.set(0,y,0);pivot.add(pin);}
   // Recessed rear panels remain visible when a leaf rotates past ninety degrees.
   for(const y of [-leafH*.27,leafH*.23]){box(leafW*.78,leafH*.36,.012,-s*leafW/2,y,-thickness/2-.007,back,pivot);}
+ }
+ function buildRelief(image){
+  const sampler=document.createElement('canvas');sampler.width=512;sampler.height=768;const ctx=sampler.getContext('2d',{willReadFrequently:true});ctx.drawImage(image,0,0,512,768);const pixels=ctx.getImageData(0,0,512,768).data;
+  const smooth=(a,b,v)=>{const t=Math.max(0,Math.min(1,(v-a)/(b-a)));return t*t*(3-2*t);};
+  function panelMask(x,y){let mask=0;for(const [l,r,t,b] of [[.16,.436,.128,.506],[.563,.84,.128,.506],[.16,.436,.55,.803],[.563,.84,.55,.803]])mask=Math.max(mask,smooth(l,l+.008,x)*(1-smooth(r-.008,r,x))*smooth(t,t+.008,y)*(1-smooth(b-.008,b,y)));return mask;}
+  for(const {geo,start} of reliefSurfaces){const pos=geo.attributes.position,uv=geo.attributes.uv;for(let i=0;i<pos.count;i++){const x=start+uv.getX(i)*.375,y=y0+(1-uv.getY(i))*(y1-y0),px=Math.min(511,Math.max(0,Math.round(x*511))),py=Math.min(767,Math.max(0,Math.round(y*767))),idx=(py*512+px)*4,luma=(pixels[idx]*.2126+pixels[idx+1]*.7152+pixels[idx+2]*.0722)/255;const raised=panelMask(x,y)*smooth(.10,.60,luma)*.042;pos.setZ(i,raised);}pos.needsUpdate=true;geo.computeVertexNormals();geo.computeBoundingSphere();}
  }
  const wall=new THREE.MeshStandardMaterial({color:'#ecd7b3',roughness:.95}),floor=new THREE.MeshStandardMaterial({color:'#c5a171',roughness:.75});resources.push(wall,floor);
  box(2.6,.08,7,0,doorY-leafH/2-.045,-3.5,floor);box(2.6,4,.1,0,0,-6,wall);
@@ -43,11 +58,11 @@ export function createEntrance(container) {
  let progress=0,initialZ=6,focusY=0;
  const clamp=t=>Math.max(0,Math.min(1,t)),ease=t=>t*t*(3-2*t);
  function render(p=progress){progress=p;const zoom=ease(clamp(p/.25)),swing=ease(clamp((p-.16)/.58)),enter=ease(clamp((p-.75)/.25));
-  const nearZ=initialZ*.84;camera.position.set(0,THREE.MathUtils.lerp(0,doorY,enter),THREE.MathUtils.lerp(initialZ,nearZ,zoom)*(1-enter)-.38*enter);camera.lookAt(0,THREE.MathUtils.lerp(focusY,doorY,enter),-3);
+  const nearZ=initialZ*.84;camera.position.set(.11*Math.sin(swing*Math.PI)*(1-enter),THREE.MathUtils.lerp(0,doorY,enter),THREE.MathUtils.lerp(initialZ,nearZ,zoom)*(1-enter)-.38*enter);camera.lookAt(0,THREE.MathUtils.lerp(focusY,doorY,enter),-3);
   hinges[0].rotation.y=swing*Math.PI*.60;hinges[1].rotation.y=-swing*Math.PI*.60;
   canvas.style.opacity=String(1-ease(clamp((p-.94)/.06)));backdrop.style.opacity=String(.8-enter*.35);if(textureReady)renderer.render(scene,camera);
  }
- function resize(){const artWidth=Math.min(innerHeight*2/3,innerWidth/.78),artHeight=artWidth*1.5,visibleHeight=H*innerHeight/artHeight;initialZ=visibleHeight/(2*Math.tan(THREE.MathUtils.degToRad(20)));focusY=-(innerWidth<600?.05:.03)*visibleHeight;camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);render();}
+ function resize(){const artWidth=Math.min(innerHeight*2/3,innerWidth/.78),artHeight=artWidth*1.5,visibleHeight=H*innerHeight/artHeight;initialZ=visibleHeight/(2*Math.tan(THREE.MathUtils.degToRad(34)));focusY=-(innerWidth<600?.05:.03)*visibleHeight;camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);render();}
  window.addEventListener('resize',resize);resize();return{render,dispose(){window.removeEventListener('resize',resize);resources.forEach(r=>r.dispose());renderer.dispose();canvas.remove();backdrop.remove();}};
 }
 
