@@ -1,11 +1,9 @@
 # Rahul & Twinkle Mokaria — A Blessed Beginning
 
-Interactive Satyanarayan Katha and housewarming invitation for November 14, 2026 at 3:00 PM.
-
 Live invitation: https://akaup-iitnj.github.io/twinkle-invite/
 
-The site uses a local Three.js 3D entrance, festive interior, and gentle falling marigold petals. It is a static site with relative asset paths and no build step. GitHub Pages publishes the root of the main branch.
+A photographic carved-wood doorway opens with one click: a short zoom, opening double doors, then the invitation. The reading view includes slow marigold petals with a pause/resume control and respects reduced-motion settings.
 
-Edit `config.js` for event details and the Google Forms responder URL. The RSVP button opens that form; guest responses are stored by Google Forms, outside this repository. View the form's Responses tab after a test guest submits their name, attendance, and guest count. No response data or account credentials belong in this repository.
+Static website, no build step. GitHub Pages serves the root of main. Edit config.js for event details and the published Google Forms responder link. RSVP responses remain in Google Forms and its connected spreadsheet, outside this repository.
 
-To preview locally, serve this directory with a local HTTP server. Keep `assets/three.module.js` and `assets/three.core.js` together; their upstream MIT license notices are included in the files.
+The generated doorway asset is assets/carved-door.png. Both animated panels sample the same image to keep the carvings aligned. Local asset paths are relative for project URL hosting. Serve this directory over HTTP to preview.

@@ -42,3 +42,24 @@ body[data-scene="revealed"] .petal-toggle{display:inline-flex}
 .petals-user-paused .petal-fall,.petals-user-paused .marigold-petal{animation-play-state:paused}
 @media(max-width:600px){.petal-toggle{left:14px;top:max(12px,env(safe-area-inset-top))}}
 @media(prefers-reduced-motion:reduce){body[data-scene="revealed"] .petal-toggle{display:none}}
+/* Photographic carved-wood doorway replaces the modeled entrance. */
+#scene-stage{background:radial-gradient(ellipse at 50% 20%,#f2cf91,#9b5a22 70%,#573216)}
+.door-backdrop{position:absolute;inset:-40px;background:linear-gradient(#4b280b44,#3a220dbb),url('assets/carved-door.png') center/cover;filter:blur(27px);transform:scale(1.08)}
+.photo-door-world{position:absolute;left:50%;top:47%;transform-origin:50% 45%;perspective:1100px;transform-style:preserve-3d;will-change:transform,opacity}
+.photo-door-frame{position:absolute;inset:0;width:100%;height:100%;object-fit:fill;clip-path:polygon(evenodd,0% 0%,100% 0%,100% 100%,0% 100%,0% 0%,12.5% 11.72%,12.5% 88.41%,87.5% 88.41%,87.5% 11.72%,12.5% 11.72%)}
+.door-interior{position:absolute;left:12.5%;top:11.72%;width:75%;height:76.69%;background:radial-gradient(ellipse at 50% 30%,#fff5df,#edce99 68%,#c68c49);box-shadow:inset 0 0 55px #b27c3b77}
+.photo-door-leaf{position:absolute;top:11.72%;width:37.5%;height:76.69%;background-image:url('assets/carved-door.png');background-size:var(--art-width) var(--art-height);background-repeat:no-repeat;backface-visibility:hidden;will-change:transform;transform-style:preserve-3d;box-shadow:inset 0 0 2px #44250e55}
+.photo-door-left{left:12.5%;transform-origin:0% 50%;background-position:16.6667% 50.3233%}
+.photo-door-right{left:50%;transform-origin:100% 50%;background-position:80% 50.3233%}
+#scene-shade{background:linear-gradient(transparent 48%,#21110522 65%,#1d100bd9 100%)}
+body[data-scene="revealed"] #scene-stage{filter:none}
+body[data-scene="revealed"] #scene-shade{background:linear-gradient(#c9893033,#5c320c44)}
+body[data-scene="welcome"] #welcome{cursor:pointer}
+.welcome{padding-bottom:28px}
+.welcome h1{font-size:clamp(1.8rem,3.2vw,2.8rem);line-height:1.07}
+.welcome-eyebrow{font-size:10px;margin-bottom:12px}
+.welcome-actions{margin-top:20px}
+.flower-canopy{display:none}
+#festive-room::before{content:'';position:absolute;inset:0 0 auto;height:clamp(82px,10vw,135px);background:url('assets/carved-door.png') center top/100% auto no-repeat;mask-image:linear-gradient(#000 50%,transparent)}
+@media(max-width:600px){.welcome{padding-bottom:28px}.welcome h1{font-size:1.9rem}.photo-door-world{top:45%}#festive-room::before{background-size:125% auto}.welcome-actions{margin-top:17px}}
+.door-backdrop{z-index:0}.photo-door-world{z-index:1}#scene-shade{z-index:2}
