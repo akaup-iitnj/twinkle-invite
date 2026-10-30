@@ -57,10 +57,10 @@ export function createEntrance(container) {
  box(2.6,.1,6,0,doorY+leafH/2+.15,-3.1,wall);
  let progress=0,initialZ=6,focusY=0;
  const clamp=t=>Math.max(0,Math.min(1,t)),ease=t=>t*t*(3-2*t);
- function render(p=progress){progress=p;const zoom=ease(clamp(p/.25)),swing=ease(clamp((p-.16)/.58)),enter=ease(clamp((p-.75)/.25));
+ function render(p=progress){progress=p;const zoom=ease(clamp(p/.22)),swing=ease(clamp((p-.12)/.88)),enter=0;
   const nearZ=initialZ*.84;camera.position.set(.11*Math.sin(swing*Math.PI)*(1-enter),THREE.MathUtils.lerp(0,doorY,enter),THREE.MathUtils.lerp(initialZ,nearZ,zoom)*(1-enter)-.38*enter);camera.lookAt(0,THREE.MathUtils.lerp(focusY,doorY,enter),-3);
   hinges[0].rotation.y=swing*Math.PI*.60;hinges[1].rotation.y=-swing*Math.PI*.60;
-  canvas.style.opacity=String(1-ease(clamp((p-.94)/.06)));backdrop.style.opacity=String(.8-enter*.35);if(textureReady)renderer.render(scene,camera);
+  canvas.style.opacity=String(1-ease(clamp((p-.78)/.22)));backdrop.style.opacity=String(.8-ease(clamp((p-.78)/.22))*.35);if(textureReady)renderer.render(scene,camera);
  }
  function resize(){const artWidth=Math.min(innerHeight*2/3,innerWidth/.78),artHeight=artWidth*1.5,visibleHeight=H*innerHeight/artHeight;initialZ=visibleHeight/(2*Math.tan(THREE.MathUtils.degToRad(34)));focusY=-(innerWidth<600?.05:.03)*visibleHeight;camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);render();}
  window.addEventListener('resize',resize);resize();return{render,dispose(){window.removeEventListener('resize',resize);resources.forEach(r=>r.dispose());renderer.dispose();canvas.remove();backdrop.remove();}};
