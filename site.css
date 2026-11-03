@@ -253,6 +253,7 @@ button:focus-visible, input:focus-visible, select:focus-visible, a:focus-visible
   color: #7f6e5b;
   font-size: 14px;
   line-height: 1.8;
+  text-wrap: balance;
 }
 
 .host-names {
